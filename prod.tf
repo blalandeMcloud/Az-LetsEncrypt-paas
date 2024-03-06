@@ -74,7 +74,7 @@ locals {
 resource "azurerm_user_assigned_identity" "agw-mi" {
   provider            = azurerm.prod
   location            = azurerm_resource_group.rg-prod-appgw.location
-  name                = "mid-agw-fc-prod-001"
+  name                = "mi-agw-fc-prod-001"
   resource_group_name = azurerm_resource_group.rg-prod-appgw.name
 
   tags = merge(
@@ -87,6 +87,12 @@ resource "azurerm_role_assignment" "role-agw-to-kv-admin" {
   scope                = azurerm_key_vault.kv-hub.id
   role_definition_name = "Key Vault Administrator"
   principal_id         = azurerm_user_assigned_identity.agw-mi.principal_id
+}
+
+resource "azurerm_role_assignment" "role-func-to-agwmi" {
+  scope                = azurerm_user_assigned_identity.agw-mi.id
+  role_definition_name = "Managed Identity Operator"
+  principal_id         = azurerm_linux_function_app.funcletsencrypt.identity.0.principal_id
 }
 
 
